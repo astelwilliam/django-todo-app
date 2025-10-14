@@ -1,18 +1,25 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task
+from django.utils import timezone
 
 def index(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.all().order_by('-priority', 'due_date')
     return render(request, 'tasks/index.html', {'tasks': tasks})
-
-from django.shortcuts import redirect
 
 def add_task(request):
     if request.method == "POST":
-        title = request.POST.get("title")
-        if title:  # check if title is not empty
-            Task.objects.create(title=title)
-    return redirect("index")
+        title = request.POST.get('title')
+        category = request.POST.get('category')
+        due_date = request.POST.get('due_date')
+        priority = request.POST.get('priority')
+
+        Task.objects.create(
+            title=title,
+            category=category,
+            due_date=due_date if due_date else None,
+            priority=priority
+        )
+    return redirect('index')
 
 
 def edit_task(request, task_id):
