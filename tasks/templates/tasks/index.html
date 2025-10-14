@@ -34,15 +34,28 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold">📝 My Tasks</h1>
       <div class="flex gap-2 items-center">
+        <!-- User info and auth links -->
+        {% if user.is_authenticated %}
+          <span class="text-gray-700 dark:text-gray-300">Hello, {{ user.username }}!</span>
+          <form method="post" action="{% url 'logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition">Login</a>
+          <a href="{% url 'signup' %}" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">Sign Up</a>
+        {% endif %}
         <!-- Dark mode toggle -->
         <button id="themeToggle"
           class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition">
           🌙
         </button>
+        {% if user.is_authenticated %}
         <button id="openModal"
           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition">
           + Add Task
         </button>
+        {% endif %}
       </div>
     </div>
 
