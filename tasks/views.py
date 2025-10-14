@@ -1,28 +1,38 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task
 
-# Home page — show all tasks
 def index(request):
-    tasks = Task.objects.all().order_by('-id')  # newest first
+    tasks = Task.objects.all()
     return render(request, 'tasks/index.html', {'tasks': tasks})
 
-# Add a new task
+from django.shortcuts import redirect
+
 def add_task(request):
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        if title:  # make sure it's not empty
+    if request.method == "POST":
+        title = request.POST.get("title")
+        if title:  # check if title is not empty
             Task.objects.create(title=title)
-    return redirect('index')
+    return redirect("index")
 
-# Toggle a task's completion status
-def toggle_task(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    task.completed = not task.completed
-    task.save()
-    return redirect('index')
 
-# Delete a task
-def delete_task(request, pk):
-    task = get_object_or_404(Task, pk=pk)
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    if request.method == 'POST':
+        task.title = request.POST.get('title')
+        task.save()
+        return redirect('index')
+    return render(request, 'tasks/edit_task.html', {'task': task})
+
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
     task.delete()
+    return redirect('index')
+
+from django.shortcuts import redirect, get_object_or_404
+from .models import Task
+
+def toggle_done(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.done = not task.done  # ✅ Toggle True/False
+    task.save()
     return redirect('index')
