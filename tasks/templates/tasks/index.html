@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li.completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+        button {
+            background: #ff4b5c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button.toggle {
+            background: #4caf50;
+        }
+        form {
+            display: flex;
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My TODO List</h1>
+
+        <ul>
+            {% for task in tasks %}
+            <li class="{% if task.completed %}completed{% endif %}">
+                {{ task.title }}
+                <div>
+                    <form method="POST" action="{% url 'toggle_task' task.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="toggle">
+                            {% if task.completed %}Mark Pending{% else %}Mark Done{% endif %}
+                        </button>
+                    </form>
+                    <form method="POST" action="{% url 'delete_task' task.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </div>
+            </li>
+            {% empty %}
+            <li>No tasks yet!</li>
+            {% endfor %}
+        </ul>
+
+        <form method="POST" action="{% url 'add_task' %}">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="New Task" required>
+            <input type="submit" value="Add Task">
+        </form>
+    </div>
+</body>
+</html>
