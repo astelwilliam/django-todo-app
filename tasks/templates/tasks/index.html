@@ -21,22 +21,56 @@
       justify-content: center; align-items: center; }
     .modal.active { display: flex; }
 
+    /* Celebration animation */
+    .celebrate { animation: celebrate 0.6s ease-in-out; }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Motivational quotes */
+    .quote-container {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      color: white;
+      margin: 2rem 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .quote-text {
+      font-size: 1.25rem;
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+
+    .quote-author {
+      font-weight: bold;
+      opacity: 0.9;
+    }
+
+    /* Theme colors */
+    body.theme-default { background-color: #f9fafb !important; }
+    body.theme-dark { background-color: #111827 !important; }
+
     /* Smooth theme transition */
     * { transition: background-color 0.4s, color 0.4s, border-color 0.4s; }
   </style>
 </head>
 
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center py-10 transition-colors duration-500">
+<body class="bg-gray-100 min-h-screen flex flex-col items-center py-10 transition-colors duration-500">
 
   <div class="w-full max-w-3xl px-4">
 
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">📝 My Tasks</h1>
+      <h1 class="text-4xl font-extrabold text-black dark:text-white">📝 My Tasks</h1>
       <div class="flex gap-2 items-center">
         <!-- User info and auth links -->
         {% if user.is_authenticated %}
-          <span class="text-gray-700 dark:text-gray-300">Hello, {{ user.username }}!</span>
+          <span class="text-black dark:text-gray-300 font-semibold">Hello, {{ user.username }}!</span>
           <form method="post" action="{% url 'logout' %}" class="inline">
             {% csrf_token %}
             <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition">Logout</button>
@@ -45,10 +79,9 @@
           <a href="{% url 'login' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition">Login</a>
           <a href="{% url 'signup' %}" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">Sign Up</a>
         {% endif %}
-        <!-- Dark mode toggle -->
-        <button id="themeToggle"
-          class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition">
-          🌙
+        <!-- Theme toggle -->
+        <button id="themeToggle" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl">
+          ☀️
         </button>
         {% if user.is_authenticated %}
         <button id="openModal"
@@ -65,8 +98,8 @@
       <div
         class="fade-in bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md task-card flex justify-between items-center {% if task.done %}done{% endif %}">
         <div>
-          <h2 class="text-xl font-semibold">{{ task.title }}</h2>
-          <p class="text-gray-500 dark:text-gray-400">{{ task.description|truncatechars:60 }}</p>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ task.title }}</h2>
+          <p class="text-gray-700 dark:text-gray-300">{{ task.description|truncatechars:60 }}</p>
 
           <!-- New fields display -->
           <div class="mt-2 flex flex-wrap gap-2 text-sm">
@@ -94,9 +127,9 @@
         </div>
 
         <div class="flex gap-2">
-          <form method="POST" action="{% url 'toggle_done' task.id %}">
+          <form method="POST" action="{% url 'toggle_done' task.id %}" class="inline">
             {% csrf_token %}
-            <button type="submit"
+            <button type="submit" id="done-btn-{{ task.id }}"
               class="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-lg transition">
               {% if task.done %}Undo{% else %}Done{% endif %}
             </button>
@@ -107,9 +140,16 @@
             class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-lg transition">Delete</a>
         </div>
       </div>
-      {% empty %}
-      <p class="text-gray-500 text-center dark:text-gray-400">No tasks yet. Click "Add Task" to create one!</p>
       {% endfor %}
+
+      <!-- Always show motivational quotes section -->
+      <div class="quote-container fade-in">
+        <div class="quote-text" id="quoteText">"The only way to do great work is to love what you do."</div>
+        <div class="quote-author">- Steve Jobs</div>
+        <button onclick="changeQuote()" class="mt-4 px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition">
+          💡 New Quote
+        </button>
+      </div>
     </div>
   </div>
 
@@ -160,7 +200,52 @@
   </div>
 
   <!-- JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
+    // Motivational quotes
+    const quotes = [
+      { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+      { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+      { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+      { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+      { text: "The best way to predict the future is to create it.", author: "Peter Drucker" },
+      { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+      { text: "The only limit to our realization of tomorrow will be our doubts of today.", author: "Franklin D. Roosevelt" },
+      { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", author: "Winston Churchill" }
+    ];
+
+    function changeQuote() {
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById('quoteText').textContent = `"${randomQuote.text}"`;
+      document.querySelector('.quote-author').textContent = `- ${randomQuote.author}`;
+    }
+
+    // Celebration animation for task completion
+    function celebrateTask(taskCard) {
+      taskCard.classList.add('celebrate');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      setTimeout(() => taskCard.classList.remove('celebrate'), 600);
+    }
+
+    // Check for task completion and trigger celebration
+    document.addEventListener('DOMContentLoaded', function() {
+      // Listen for form submissions on done buttons
+      document.querySelectorAll('form[action*="toggle_done"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          const button = this.querySelector('button');
+          const taskCard = this.closest('.task-card');
+          if (button && button.textContent.trim() === 'Done') {
+            // Small delay to allow form submission, then celebrate
+            setTimeout(() => celebrateTask(taskCard), 100);
+          }
+        });
+      });
+    });
+
     // Modal toggle
     const modal = document.getElementById('taskModal');
     document.getElementById('openModal').addEventListener('click', () => modal.classList.add('active'));
@@ -169,25 +254,38 @@
     // Theme toggle
     const themeToggle = document.getElementById('themeToggle');
     const body = document.body;
-    const currentTheme = localStorage.getItem('theme');
 
-    if (currentTheme === 'dark') {
-      body.classList.add('dark', 'bg-gray-900', 'text-gray-100');
-      themeToggle.textContent = '☀️';
-    }
+    // Load saved theme
+    const savedTheme = localStorage.getItem('appTheme') || 'default';
+    setTheme(savedTheme);
 
+    // Toggle theme on click
     themeToggle.addEventListener('click', () => {
-      const isDark = body.classList.toggle('dark');
-      if (isDark) {
-        body.classList.add('bg-gray-900', 'text-gray-100');
-        localStorage.setItem('theme', 'dark');
-        themeToggle.textContent = '☀️';
-      } else {
-        body.classList.remove('bg-gray-900', 'text-gray-100');
-        localStorage.setItem('theme', 'light');
-        themeToggle.textContent = '🌙';
-      }
+      const currentTheme = body.classList.contains('theme-dark') ? 'dark' : 'default';
+      const newTheme = currentTheme === 'dark' ? 'default' : 'dark';
+      setTheme(newTheme);
     });
+
+    function setTheme(theme) {
+      // Remove all theme classes
+      body.classList.remove('theme-default', 'theme-dark');
+
+      // Apply new theme
+      body.classList.add(`theme-${theme}`);
+
+      // Update icon
+      themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+
+      // Save to localStorage
+      localStorage.setItem('appTheme', theme);
+
+      // Enable/disable Tailwind dark mode
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
   </script>
 </body>
 </html>
