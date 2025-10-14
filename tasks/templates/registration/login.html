@@ -1,0 +1,35 @@
+{% extends "registration/base.html" %}
+
+{% block title %}Login - Django Todo App{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold text-center mb-6 text-gray-700 dark:text-gray-300">Welcome Back! 👋</h1>
+<form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div>
+        <label for="id_username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+        <input type="text" name="username" id="id_username" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+    </div>
+    <div>
+        <label for="id_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+        <input type="password" name="password" id="id_password" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+    </div>
+    {% if form.errors %}
+    <div class="text-red-500 text-sm">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                {{ error }}
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300">
+        Log In
+    </button>
+</form>
+<p class="text-center mt-4 text-gray-600 dark:text-gray-400">
+    Don't have an account? <a href="{% url 'signup' %}" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">Sign up here</a>
+</p>
+{% endblock %}

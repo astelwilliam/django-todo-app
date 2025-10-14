@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Django Todo App{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Animations */
+    .fade-in { animation: fadeIn 0.6s ease-in-out forwards; opacity: 0; }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    /* Smooth theme transition */
+    * { transition: background-color 0.4s, color 0.4s, border-color 0.4s; }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center py-10 transition-colors duration-500">
+
+  <div class="w-full max-w-3xl px-4">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold">📝 Django Todo App</h1>
+      <div class="flex gap-2 items-center">
+        <!-- Dark mode toggle -->
+        <button id="themeToggle"
+          class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition">
+          🌙
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex justify-center">
+      <div class="fade-in bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md shadow-md">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const currentTheme = localStorage.getItem('theme');
+
+    if (currentTheme === 'dark') {
+      body.classList.add('dark', 'bg-gray-900', 'text-gray-100');
+      themeToggle.textContent = '☀️';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.classList.toggle('dark');
+      if (isDark) {
+        body.classList.add('bg-gray-900', 'text-gray-100');
+        localStorage.setItem('theme', 'dark');
+        themeToggle.textContent = '☀️';
+      } else {
+        body.classList.remove('bg-gray-900', 'text-gray-100');
+        localStorage.setItem('theme', 'light');
+        themeToggle.textContent = '🌙';
+      }
+    });
+  </script>
+</body>
+</html>
